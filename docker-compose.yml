@@ -35,26 +35,6 @@ services:
     networks:
       - lab
 
-  data-generator:
-    build: ./data-generator
-    container_name: lab-generator
-    profiles:
-      - setup
-    restart: "no"
-    env_file: .env
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      NUM_CUSTOMERS: 1000
-      NUM_ORDERS: 5000
-    volumes:
-      - ./data-generator/scripts:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - lab
-
   jupyter:
     build: ./jupyter
     container_name: lab-jupyter
@@ -70,7 +50,7 @@ services:
         condition: service_healthy 
     networks:
       - lab
-
+  
   redis:
     image: redis:7-alpine
     container_name: lab-redis

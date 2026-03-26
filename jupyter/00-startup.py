@@ -4,7 +4,7 @@ from IPython import get_ipython
 ipython = get_ipython()
 
 if ipython:
-    print("🚀 Conectando ao banco...")
+    print(" Conectando ao banco...")
     try:
         ipython.run_line_magic('load_ext', 'sql')
         
