@@ -7,8 +7,10 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata 
     ports:
       - "5432:5432"
+    command: ["postgres", "-c", "wal_level=logical"]
     volumes:
-      - pgdata:/var/lib/postgresql/data 
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/postgresql.conf:/etc/postgresql/custom.conf:ro 
       - ./postgres/init-scripts:/docker-entrypoint-initdb.d:ro
     restart: unless-stopped
     healthcheck:
@@ -34,6 +36,70 @@ services:
         condition: service_healthy
     networks:
       - lab
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.10
+    container_name: lab-redpanda
+    
+    command: >
+      redpanda start
+      --smp 1
+      --overprovisioned
+      --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      --advertise-kafka-addr internal://lab-redpanda:9092,external://localhost:19092
+      --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      --rpc-addr 0.0.0.0:33145
+    ports:
+      - "19092:19092" 
+      - "18081:18081" 
+      - "18082:18082" 
+    volumes:
+      - redpanda_data_lab:/var/lib/redpanda/data
+    networks:
+      - lab
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 15s  
+      timeout: 5s    
+      retries: 5  
+      start_period: 20s 
+
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.4.3
+    container_name: redpanda-console
+    environment:
+      KAFKA_BROKERS: "lab-redpanda:9092"
+      KAFKA_SCHEMAREGISTRY_ENABLED: "true"
+      KAFKA_SCHEMAREGISTRY_URLS: "http://lab-redpanda:8081"
+    ports:
+      - "8080:8080"
+    networks:
+      - lab
+
+  debezium:
+    build: ./debezium
+    container_name: cdc-worker
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: lab-redpanda:9092
+      GROUP_ID: cdc-group-br
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      STATUS_STORAGE_TOPIC: connect_statuses
+    networks:
+      - lab
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   jupyter:
     build: ./jupyter
@@ -66,6 +132,7 @@ volumes:
   pgdata:
   pgadmin:
   redis:
+  redpanda_data_lab:
 
 networks:
   lab:
