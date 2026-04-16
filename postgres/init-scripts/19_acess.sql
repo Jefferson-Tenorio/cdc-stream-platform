@@ -3,12 +3,12 @@ CREATE TABLE access.customers_pii (
     -- surrogate key
     tax_id_type VARCHAR(20) NOT NULL CHECK (tax_id_type IN ('SSN', 'CPF', 'VAT', 'OTHER')),
     tax_id_enc BYTEA NOT NULL,
-    tax_id_blind_index VARCHAR(64) NOT NULL,
+    tax_id_blind_index BYTEA NOT NULL,
     -- natural key for lookups
     tax_id_country VARCHAR(2) NOT NULL,
     key_version_id INT NOT NULL,
     email_enc BYTEA NOT NULL,
-    email_blind_index VARCHAR(64),
+    email_blind_index BYTEA NOT NULL,
     -- natural key for lookups
     phone_enc BYTEA NOT NULL,
     full_name_enc BYTEA NOT NULL,

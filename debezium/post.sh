@@ -8,4 +8,3 @@ curl -i -X POST \
   -H "Content-Type: application/json" \
   --data @"$CONNECTOR_JSON" \
   "$CONNECT_URL"
-

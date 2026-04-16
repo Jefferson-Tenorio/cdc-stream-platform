@@ -9,7 +9,7 @@
     "database.password": "root",
     "database.dbname": "lab_dados",
     "database.server.name": "postgres",
-    "table.include.list": "core.policies",
+    "table.include.list": "acess.customer_pii",
     "topic.prefix": "dbz"
   }
 }

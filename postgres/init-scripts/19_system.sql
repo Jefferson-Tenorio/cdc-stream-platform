@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS system.actors (
 );
 
 CREATE TABLE system.transactionaal_outbox (
-    event_id UUID NOT NULL DEFAULT uuidv7()(),
+    event_id UUID NOT NULL DEFAULT uuidv7(),
     correlation_id UUID NOT NULL,
     aggregate_type VARCHAR(50) NOT NULL,
     aggregate_id UUID NOT NULL,
